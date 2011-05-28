@@ -9,11 +9,7 @@ use Moose;
 use namespace::clean -except => 'meta'; 
 
 extends 'Catalyst::Model'; 
-
-with qw(
-    Catalyst::Component::InstancePerContext 
-    Catalyst::Component::ContextClosure 
-); 
+with 'Catalyst::Component::InstancePerContext';
 
 has model       => ( is => 'ro', required => 1 ); 
 has constructor => ( is => 'ro', required => 1 ); 
@@ -40,16 +36,6 @@ sub _build_cache
 sub build_per_context_instance { 
 
     my ($self, $c) = @_; 
-    
-    #my $query = $self->make_context_closure(sub { 
-    #    my ($c, @args) = @_; 
-    #    return $c->request->query;
-    #}, $c);
-
-    #my $model = $self->make_context_closure(sub { 
-    #    my ($c, @args) = @_; 
-    #    return $c->model($self->model);
-    #}, $c);
 
     return HTML::FormFu::Library->new(
         cache => $self->cache,
