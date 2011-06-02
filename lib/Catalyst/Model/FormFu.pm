@@ -4,17 +4,16 @@ use strict;
 use warnings;
 use HTML::FormFu;
 use HTML::FormFu::Library;
-use Devel::Dwarn;
 use Moose;
 use namespace::clean -except => 'meta'; 
 
 extends 'Catalyst::Model'; 
 with 'Catalyst::Component::InstancePerContext';
 
-has model       => ( is => 'ro', required => 1 ); 
-has constructor => ( is => 'ro', required => 1 ); 
-has forms       => ( is => 'ro', required => 1 ); 
-has cache       => ( is => 'ro', required => 1, builder => '_build_cache' ); 
+has model       => ( is => 'ro', required => 1, isa => 'Str' ); 
+has constructor => ( is => 'ro', required => 1, isa => 'HashRef' ); 
+has forms       => ( is => 'ro', required => 1, isa => 'ArrayRef' ); 
+has cache       => ( is => 'ro', required => 1, isa => 'HashRef', builder => '_build_cache' ); 
 
 sub _build_cache
 {
