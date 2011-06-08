@@ -12,9 +12,9 @@ use namespace::clean -except => 'meta';
 extends 'Catalyst::Model'; 
 with 'Catalyst::Component::InstancePerContext';
 
-has model       => ( is => 'ro', required => 1, isa => 'Str' ); 
-has constructor => ( is => 'ro', required => 1, isa => 'HashRef' ); 
-has forms       => ( is => 'ro', required => 1, isa => 'ArrayRef' ); 
+has model_stash => ( is => 'ro', isa => 'HashRef' ); 
+has constructor => ( is => 'ro', isa => 'HashRef', default => sub { {} } ); 
+has forms       => ( is => 'ro', required => 1, isa => 'HashRef' ); 
 has cache       => ( is => 'ro', required => 1, isa => 'HashRef', builder => '_build_cache' ); 
 
 sub _build_cache
@@ -23,12 +23,12 @@ sub _build_cache
 
     my %cache;
 
-    foreach my $specs (@{$self->forms})
+    while ( my ($id, $config_file) = each %{$self->forms} )
     {
-        my %args = ( %{$self->constructor}, query_type => 'Catalyst' );
+        my %args = ( query_type => 'Catalyst', %{$self->constructor} );
         my $form = HTML::FormFu->new(\%args);
-        $form->load_config_file($specs->{config_file});
-        $cache{$specs->{name}} = $form;
+        $form->load_config_file($config_file);
+        $cache{$id} = $form;
     }
 
     return \%cache;
@@ -38,11 +38,14 @@ sub build_per_context_instance {
 
     my ($self, $c) = @_; 
 
-    return HTML::FormFu::Library->new(
+    my %args = (
         cache => $self->cache,
-        model => $c->model($self->model),
         query => $c->request->query_parameters,
     );
+
+    $args{model} = $c->model($self->model_stash->{schema}) if $self->model_stash;
+
+    return HTML::FormFu::Library->new(%args);
 } 
 
 __PACKAGE__->meta->make_immutable; 
@@ -57,13 +60,11 @@ __PACKAGE__->meta->make_immutable;
 		use parent 'Catalyst';
 		
 		__PACKAGE__->config( 'Model::FormFu' => {
-			model => 'MySchema',
-			constructor => {
-				config_file_path => 'myapp/root/forms',
-			},
-			forms => [
-				{ name => 'form1', config_file => 'form1.yaml' } 
-				{ name => 'form2', config_file => 'form2.yaml' } 
+			model_stash => { schema => 'MySchema' },
+			constructor => { config_file_path => 'myapp/root/forms' },
+			forms => {
+				form1 => 'form1.yaml',
+				form2 => 'form2.yaml',
 			]
 		} );
 	
@@ -106,15 +107,15 @@ C<Catalyst::Model::FormFu> accepts the following configuration options
 
 =item forms
 
-An arrayref of hashrefs each containing a definition of a form to load. Each hashref must have two keys: C<name>, which is the name by which your form will be accessed, and C<config_file>, which is the configuration file that will be loaded for this form.
+A hashref where keys are the names by which the forms will be accessed, and the values are the configuration files that will be loaded for the respective forms.
 
 =item constructor
 
 A hashref of options that will be passed to C<HTML::FormFu-E<gt>new(...)> for every form that is created. 
 
-=item model
+=item model_stash
 
-The name of a Catalyst model class that will be place in the form stash for use by L<HTML::FormFu::Model::DBIC>.
+A hashref with a C<stash> key whose value is the name of a Catalyst model class that will be place in the form stash for use by L<HTML::FormFu::Model::DBIC>.
 
 =back
 

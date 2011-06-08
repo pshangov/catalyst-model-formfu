@@ -7,6 +7,7 @@ use warnings;
 
 use Moose;
 use namespace::clean -except => 'meta'; 
+use Data::Printer;
 
 has model => ( is => 'ro' );
 has query => ( is => 'ro' );
@@ -17,7 +18,7 @@ has cache =>
     required => 1,
     isa      => 'HashRef',
     traits   => ['Hash'],
-    handles  => { get_cached_forms => 'get' }
+    handles  => { cached_form => 'get' }
 );
 
 sub form
@@ -43,7 +44,7 @@ sub raw_form
         map { $_->stash( schema => $self->model ) }
         map { $_->query($self->query) }
         map { $_->clone } 
-        $self->get_cached_forms(@names);
+        $self->cached_form(@names);
 
     return wantarray 
         ? @forms
@@ -82,6 +83,10 @@ Given the id of one or more forms stored in the cache, clones the form objects, 
 =head2 raw_form
 
 Same as L<form> above, but does not process the forms before returning them. Useful to avoid calling C<process> multiple times when you need to make further modification to the form object. 
+
+=head2 cached_form
+
+Returns the original form, a clone of which you get when you use C<form> or C<raw_form>. Any changes you make to the state of a cached form will be reflected in all objects produced via subsequent calls to C<form> and C<raw_form>. Do not use unless you know what you are doing.
 
 =head1 SEE ALSO
 

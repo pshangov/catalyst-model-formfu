@@ -3,6 +3,7 @@ package FormFu;
 use strict;
 use warnings;
 
+
 use Catalyst::Runtime 5.80;
 use FindBin     qw();
 use Path::Class qw(file dir);
@@ -52,16 +53,12 @@ __PACKAGE__->config(
         },
 	},
     
-    'Model::FormFu' => {
-        model => 'Books',
-        constructor => {
-            config_file_path => dir( $FindBin::Bin, qw( root forms ) )->stringify,
-        },
-        forms => [
-            { name => 'author', config_file => 'author.conf' },
-            { name => 'book', config_file => 'book.conf' },
-        ]
+    'Model::FormFu' => { 
+        model_stash => { schema => 'Books' },
+        constructor => { config_file_path => dir( $FindBin::Bin, qw( root forms ) )->stringify },
+        forms => { author => 'author.conf', book => 'book.conf' } 
     },
+
 );
 
 __PACKAGE__->setup();
