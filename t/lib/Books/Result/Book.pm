@@ -1,23 +1,23 @@
 package Books::Result::Book;
-  
+
 use DBIx::Class::Candy;
-  
+
 table 'book';
 
 column 'id' => {
-	data_type => 'int',
+    data_type => 'int',
     is_auto_increment => 1,
 };
 
 column 'title' => {
-	data_type => 'varchar',
-	size      => 1000,
+    data_type => 'varchar',
+    size      => 1000,
 };
 
 column 'author_id' => {
-	data_type      => 'int',
-	is_foreign_key => 1,
-	is_nullable    => 1,
+    data_type      => 'int',
+    is_foreign_key => 1,
+    is_nullable    => 1,
 };
 
 primary_key 'id';

@@ -7,15 +7,15 @@ use warnings;
 use HTML::FormFu;
 use HTML::FormFu::Library;
 use Moose;
-use namespace::clean -except => 'meta'; 
+use namespace::clean -except => 'meta';
 
-extends 'Catalyst::Model'; 
+extends 'Catalyst::Model';
 with 'Catalyst::Component::InstancePerContext';
 
-has model_stash => ( is => 'ro', isa => 'HashRef' ); 
-has constructor => ( is => 'ro', isa => 'HashRef', default => sub { {} } ); 
-has forms       => ( is => 'ro', required => 1, isa => 'HashRef' ); 
-has cache       => ( is => 'ro', required => 1, isa => 'HashRef', builder => '_build_cache' ); 
+has model_stash => ( is => 'ro', isa => 'HashRef' );
+has constructor => ( is => 'ro', isa => 'HashRef', default => sub { {} } );
+has forms       => ( is => 'ro', required => 1, isa => 'HashRef' );
+has cache       => ( is => 'ro', required => 1, isa => 'HashRef', builder => '_build_cache' );
 
 sub _build_cache
 {
@@ -34,9 +34,9 @@ sub _build_cache
     return \%cache;
 }
 
-sub build_per_context_instance { 
+sub build_per_context_instance {
 
-    my ($self, $c) = @_; 
+    my ($self, $c) = @_;
 
     my %args = (
         cache => $self->cache,
@@ -46,50 +46,50 @@ sub build_per_context_instance {
     $args{model} = $c->model($self->model_stash->{schema}) if $self->model_stash;
 
     return HTML::FormFu::Library->new(%args);
-} 
+}
 
-__PACKAGE__->meta->make_immutable; 
+__PACKAGE__->meta->make_immutable;
 
 =pod
 
 =head1 SYNOPSIS
 
-	package MyApp 
-	{
-	
-		use parent 'Catalyst';
-		
-		__PACKAGE__->config( 'Model::FormFu' => {
-			model_stash => { schema => 'MySchema' },
-			constructor => { config_file_path => 'myapp/root/forms' },
-			forms => {
-				form1 => 'form1.yaml',
-				form2 => 'form2.yaml',
-			]
-		} );
-	
-	}
+    package MyApp
+    {
 
-	package MyApp::Controller::WithForms 
-	{
-		use parent 'Catalyst::Controller';
+        use parent 'Catalyst';
 
-		sub edit :Local 
-		{
-			my ($self, $c, @args) = @_;
+        __PACKAGE__->config( 'Model::FormFu' => {
+            model_stash => { schema => 'MySchema' },
+            constructor => { config_file_path => 'myapp/root/forms' },
+            forms => {
+                form1 => 'form1.yaml',
+                form2 => 'form2.yaml',
+            ]
+        } );
 
-			my $form1 = $c->model('FormFu')->form('form1');
+    }
 
-			if ($form1->submitted_and_valid)
-			...
-		}
+    package MyApp::Controller::WithForms
+    {
+        use parent 'Catalyst::Controller';
 
-	}
+        sub edit :Local
+        {
+            my ($self, $c, @args) = @_;
 
-	package MyApp::Model::FormFu 
-	{
-		use parent 'Catalyst::Model::FormFu';	
-	}
+            my $form1 = $c->model('FormFu')->form('form1');
+
+            if ($form1->submitted_and_valid)
+            ...
+        }
+
+    }
+
+    package MyApp::Model::FormFu
+    {
+        use parent 'Catalyst::Model::FormFu';
+    }
 
 =head1 DESCRIPTION
 
@@ -111,7 +111,7 @@ A hashref where keys are the names by which the forms will be accessed, and the 
 
 =item constructor
 
-A hashref of options that will be passed to C<HTML::FormFu-E<gt>new(...)> for every form that is created. 
+A hashref of options that will be passed to C<HTML::FormFu-E<gt>new(...)> for every form that is created.
 
 =item model_stash
 
@@ -121,7 +121,7 @@ A hashref with a C<stash> key whose value is the name of a Catalyst model class 
 
 =head1 USAGE
 
-Use the C<form> method of the model to fetch one or more forms by their names. The form is loaded with the current request parameters and processed. 
+Use the C<form> method of the model to fetch one or more forms by their names. The form is loaded with the current request parameters and processed.
 
 =head1 SEE ALSO
 
