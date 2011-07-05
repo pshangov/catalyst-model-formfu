@@ -96,8 +96,10 @@ __PACKAGE__->meta->make_immutable;
 C<Catalyst::Model::FormFu> is an alternative interface for using L<HTML::FormFu> within L<Catalyst>. It differs from L<Catalyst::Controller::HTML::FormFu> in the following ways:
 
 =for :list
-* It initializes all required form objects when your app is started, and returns clones of these objects in your actions. This avoids having to call L<HTML::FormFu/load_config_file> and L<HTML::FormFu/populate> every time you display a form, potentially leading to performance improvements in persistent applications.
+* It initializes all required form objects when your app is started, and returns clones of these objects in your actions. This avoids having to call L<HTML::FormFu/load_config_file> and L<HTML::FormFu/populate> every time you display a form, leading to performance improvements in persistent applications.
 * It does not inherit from L<Catalyst::Controller>, and so is safe to use with other modules that do so, in particular L<Catalyst::Controller::ActionRole>.
+
+Note that this is a completely different module from the original C<Catalyst::Model::FormFu> by L<Daisuke Maki|http://search.cpan.org/~dmaki/>, which is now only available on the BackPAN (L<http://backpan.perl.org/authors/id/D/DM/DMAKI/Catalyst-Model-FormFu-0.01001.tar.gz>).
 
 =head1 CONFIGURATION OPTIONS
 
