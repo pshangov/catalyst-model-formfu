@@ -1,4 +1,7 @@
-Revision history for MooseX-Params
+Revision history for Catalyst::Model::FormFu
+
+0.003   13/07/2011
+        * Add build requirement for HTML::FormFu::Model::DBIC
 
 0.002   05/07/2011
         * Upload as official release (thanks DMAKI)

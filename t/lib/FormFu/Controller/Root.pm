@@ -3,7 +3,7 @@ package FormFu::Controller::Root;
 use strict;
 use warnings;
 
-use parent qw(Catalyst::Controller::HTML::FormFu);
+use parent qw(Catalyst::Controller);
 
 __PACKAGE__->config->{namespace} = '';
 
