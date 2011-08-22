@@ -6,16 +6,24 @@ use strict;
 use warnings;
 use HTML::FormFu;
 use HTML::FormFu::Library;
+use Scalar::Util qw(weaken);
 use Moose;
 use namespace::clean -except => 'meta';
 
 extends 'Catalyst::Model';
 with 'Catalyst::Component::InstancePerContext';
 
-has model_stash => ( is => 'ro', isa => 'HashRef' );
-has constructor => ( is => 'ro', isa => 'HashRef', default => sub { {} } );
-has forms       => ( is => 'ro', required => 1, isa => 'HashRef' );
-has cache       => ( is => 'ro', required => 1, isa => 'HashRef', builder => '_build_cache' );
+has model_stash             => ( is => 'ro', isa => 'HashRef' );
+has constructor             => ( is => 'ro', isa => 'HashRef', default => sub { {} } );
+has context_stash           => ( is => 'ro', isa => 'Str', default => 'context' );
+has config_callback         => ( is => 'ro', isa => 'Bool', default => 1 );
+has forms                   => ( is => 'ro', isa => 'HashRef' );
+has cache                   => ( is => 'ro', isa => 'HashRef', builder => '_build_cache' );
+has languages_from_context  => ( is => 'ro', isa => 'Bool', default => 0 );
+has localize_from_context   => ( is => 'ro', isa => 'Bool', default => 0 );
+has default_action_use_name => ( is => 'ro', isa => 'Bool', default => 0 );
+has default_action_use_path => ( is => 'ro', isa => 'Bool', default => 0 );
+
 
 sub _build_cache
 {
@@ -38,12 +46,62 @@ sub build_per_context_instance {
 
     my ($self, $c) = @_;
 
-    my %args = (
-        cache => $self->cache,
-        query => $c->request->query_parameters,
-    );
+    my %args;
+    
+    # cache and query
+    $args{cache} = $self->cache;
+    $args{query} = $c->request;
 
-    $args{model} = $c->model($self->model_stash->{schema}) if $self->model_stash;
+    ### stash
+    $args{stash}{$self->context_stash} = $c;
+    weaken $args{stash}{$self->context_stash};
+    $args{stash}{schema} = $c->model($self->model_stash->{schema}) if $self->model_stash;
+
+    ### config_callback
+    $args{config_callback}{plain_value} => sub 
+    {
+        return unless defined $_;
+
+        if ( /__uri_for\(/ )
+        {
+            s{__uri_for\((.+?)\)__}
+             { $c->uri_for( split( '\s*,\s*', $1 ) ) }eg
+         }
+    
+        if ( /__path_to\(/ )
+        {
+            s{__path_to\(\s*(.+?)\s*\)__}
+             { $c->path_to( split( '\s*,\s*', $1 ) ) }eg
+        }
+
+        if ( /__config\(/ )
+        {
+            s{__config\((.+?)\)__}
+             { $c->config->{$1}  }eg
+        }
+    }) if $self->config_callback;
+
+    ### action
+    if ($self->default_action_use_name) 
+    {
+        $args{action} = $c->uri_for($c->{action}->name);
+
+        $c->log->debug("FormFu - Setting default action by name: $args{action}")
+            if $c->debug;    
+    } 
+    elsif ($self->default_action_use_path) 
+    {
+        $args{action} = $c->request->base . $c->request->path;
+
+        $c->log->debug("FormFu - Setting default action by path: $args{action}")
+            if $c->debug;
+    }
+    
+    ### languages
+    $args{languages} = $c->languages if $self->languages_from_context;
+    
+    ### localize_object
+    $args{add_localize_object} = $c if $self->localize_from_context;
 
     return HTML::FormFu::Library->new(%args);
 }

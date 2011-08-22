@@ -7,10 +7,13 @@ use warnings;
 
 use Moose;
 use namespace::clean -except => 'meta';
-use Data::Printer;
 
-has model => ( is => 'ro' );
-has query => ( is => 'ro' );
+has model               => ( is => 'ro' );
+has query               => ( is => 'ro' );
+has action              => ( is => 'ro' );
+has languages           => ( is => 'ro' );
+has config_callback     => ( is => 'ro' );
+has add_localize_object => ( is => 'ro' );
 
 has cache =>
 (
@@ -40,11 +43,18 @@ sub raw_form
 
     Carp::croak("Please specify which forms you want to access") unless @names;
 
-    my @forms =
-        map { $_->stash( schema => $self->model ) }
-        map { $_->query($self->query) }
-        map { $_->clone }
-        $self->cached_form(@names);
+    my @forms = map { $_->clone } $self->cached_form(@names);
+
+    my @methods = qw(stash query action languages config_callback add_localize_object);
+
+    foreach my $form (@forms)
+    {
+        foreach my $method (@methods)
+        {
+            my $predicate = "has_$method";
+            $form->$method( $self->$method ) if $self->$predicate;
+        }
+    }
 
     return wantarray
         ? @forms
