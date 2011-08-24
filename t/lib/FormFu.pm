@@ -26,7 +26,8 @@ __PACKAGE__->config(
 
     'Model::Books' => {
         schema_class => 'Books',
-        connect_info => sub {
+        connect_info => sub
+        {
             my $schema = Books->connect('dbi:SQLite:dbname=:memory:', undef, undef, { RaiseError => 1 });
             $schema->deploy;
             $schema->populate( 'Genre', [
@@ -56,7 +57,7 @@ __PACKAGE__->config(
     'Model::FormFu' => {
         model_stash => { schema => 'Books' },
         constructor => { config_file_path => dir( $FindBin::Bin, qw( root forms ) )->stringify },
-        forms => { author => 'author.conf', book => 'book.conf' }
+        forms       => { author => 'author.conf', book => 'book.conf' },
     },
 
 );

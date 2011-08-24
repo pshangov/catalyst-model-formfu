@@ -10,6 +10,7 @@ use namespace::clean -except => 'meta';
 
 has model               => ( is => 'ro' );
 has query               => ( is => 'ro' );
+has stash               => ( is => 'ro' );
 has action              => ( is => 'ro' );
 has languages           => ( is => 'ro' );
 has config_callback     => ( is => 'ro' );
@@ -51,8 +52,7 @@ sub raw_form
     {
         foreach my $method (@methods)
         {
-            my $predicate = "has_$method";
-            $form->$method( $self->$method ) if $self->$predicate;
+            $form->$method( $self->$method ) if $self->$method;
         }
     }
 
